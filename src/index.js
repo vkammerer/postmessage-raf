@@ -46,11 +46,7 @@ export const mainMessager = ({ worker, onReceiveAction, onBeforePing }) => {
     pinging = false;
     sendAll();
   };
-  return {
-    post,
-    startPing,
-    stopPing
-  };
+  return { post };
 };
 
 export const workerMessager = ({ onReceiveAction, onBeforePong }) => {
