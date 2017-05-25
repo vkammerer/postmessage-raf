@@ -2,7 +2,7 @@ A small layer on top of ```postMessage``` and ```requestAnimationFrame``` to imp
 
 ## Installation   
 ```shell
-npm i @vkammerer/webworker-postmessage
+npm i @vkammerer/postmessage-raf
 ```
 
 ## Usage   
@@ -23,7 +23,7 @@ messager.post(action);
 
 In "slave.js", the worker:
 ```javascript
-import { workerMessager } from "@vkammerer/webworker-postmessage";
+import { workerMessager } from "@vkammerer/postmessage-raf";
 
 const messager = workerMessager({
   onReceiveAction: action => console.log(action.foo); // 'bar'
