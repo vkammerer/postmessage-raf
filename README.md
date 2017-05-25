@@ -61,7 +61,6 @@ const messager = mainMessager({
       It is the number of ping messages sent since the last 'startPing()' call.`;
     )
   }
-  onBeforePing: count => { console.log(`About to send a ping message of count ${count}`) }
   // hook function executed before the ping message in "Ping mode"
 });
 
@@ -101,3 +100,5 @@ It returns an object with the following methods:
 }
 ```
 
+## TODO   
+- Support for delayed action callbacks: make it possible for the worker to send a collection of actions, each associated with a count index, and call ```onReceiveAction``` only when the corresponding ping occurs.
