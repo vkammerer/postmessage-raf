@@ -4,7 +4,7 @@ export const mainMessager = ({ worker, onReceiveAction, onBeforePing }) => {
   // INIT
   worker.addEventListener("message", function handleMessage(mE) {
     const message = JSON.parse(mE.data);
-    if (!message.type || message.type !== "WWM_TO_MAIN") return;
+    if (!message.type || message.type !== "WWPM_TO_MAIN") return;
     message.payload.forEach(onReceiveAction);
     if (message.meta.pingRequest === "start") startPing();
     if (message.meta.pingRequest === "stop") stopPing();
@@ -18,7 +18,7 @@ export const mainMessager = ({ worker, onReceiveAction, onBeforePing }) => {
   // PRIVATE
   const sendAll = pingData => {
     sendToWorker(worker, {
-      type: "WWM_TO_WORKER",
+      type: "WWPM_TO_WORKER",
       meta: { pingData },
       payload: actions
     });
@@ -57,7 +57,7 @@ export const workerMessager = ({ onReceiveAction, onBeforePong }) => {
   // INIT
   self.addEventListener("message", function handleMessage(mE) {
     const message = JSON.parse(mE.data);
-    if (!message.type || message.type !== "WWM_TO_WORKER") return;
+    if (!message.type || message.type !== "WWPM_TO_WORKER") return;
     message.payload.forEach(onReceiveAction);
     if (message.meta.pingData) pong(message.meta.pingData);
   });
@@ -69,7 +69,7 @@ export const workerMessager = ({ onReceiveAction, onBeforePong }) => {
   // PRIVATE
   const sendAll = ({ pingRequest, pongData }) => {
     sendToMain({
-      type: "WWM_TO_MAIN",
+      type: "WWPM_TO_MAIN",
       meta: { pingRequest, pongData },
       payload: actions
     });
