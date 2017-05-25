@@ -1,0 +1,24 @@
+{
+  "name": "@vkammerer/webworker-postmessage",
+  "version": "0.0.1",
+  "description": "A small layer on top of postMessage to improve performance with web workers",
+  "keywords": [
+    "webworker",
+    "postmessage",
+    "performance"
+  ],
+  "main": "lib/index.js",
+  "module": "src/index.js",
+  "scripts": {
+    "dist": "node_modules/.bin/webpack src/index.js lib/index.js --module-bind babel-loader --output-library webworker-postmessage  --output-library-target umd"
+  },
+  "author": "Vincent Kammerer <vkammerer@gmail.com> (http://vincent-kammerer.com)",
+  "repository": "https://github.com/vkammerer/webworker-postmessage/tree/master",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-loader": "^7.0.0",
+    "babel-preset-env": "^1.4.0",
+    "webpack": "^2.6.0"
+  }
+}
