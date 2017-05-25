@@ -1,6 +1,6 @@
 {
   "name": "@vkammerer/webworker-postmessage",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A small layer on top of postMessage to improve performance with web workers",
   "keywords": [
     "webworker",
