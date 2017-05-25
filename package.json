@@ -5,12 +5,13 @@
   "keywords": [
     "webworker",
     "postmessage",
+    "requestAnimationFrame",
     "performance"
   ],
   "main": "lib/index.js",
   "module": "src/index.js",
   "scripts": {
-    "lib": "node_modules/.bin/webpack src/index.js lib/index.js --module-bind babel-loader --output-library webworker-postmessage  --output-library-target umd"
+    "lib": "node_modules/.bin/webpack src/index.js lib/index.js --module-bind babel-loader --output-library postmessage-raf  --output-library-target umd"
   },
   "author": "Vincent Kammerer <vkammerer@gmail.com> (http://vincent-kammerer.com)",
   "repository": "https://github.com/vkammerer/postmessage-raf/tree/master",

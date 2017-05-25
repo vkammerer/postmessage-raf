@@ -4,8 +4,8 @@ export const mainMessager = ({ worker, onReceiveAction, onBeforePing }) => {
   // INIT
   worker.addEventListener("message", function handleMessage(mE) {
     const message = JSON.parse(mE.data);
-    if (!message.type || message.type !== "WWPM_TO_MAIN") return;
-    message.payload.forEach(onReceiveAction);
+    if (!message.type || message.type !== "PMRAF_TO_MAIN") return;
+    message.payload.forEach(onAction);
     if (message.meta.pingRequest === "start") startPing();
     if (message.meta.pingRequest === "stop") stopPing();
   });
@@ -14,11 +14,24 @@ export const mainMessager = ({ worker, onReceiveAction, onBeforePing }) => {
   let pinging = false;
   let count = 0;
   const actions = [];
+  const dActions = {};
 
   // PRIVATE
+  const onAction = ({ action, count: actionCount }) => {
+    if (!actionCount || actionCount === count) onReceiveAction(action);
+    else if (actionCount > count) {
+      dActions[actionCount] = dActions[actionCount] || [];
+      dActions[actionCount].push(action);
+    }
+  };
+  const receiveDelayedActions = count => {
+    if (!dActions[count]) return;
+    dActions[count].forEach(onReceiveAction);
+    dActions[count].length = 0;
+  };
   const sendAll = pingData => {
     sendToWorker(worker, {
-      type: "WWPM_TO_WORKER",
+      type: "PMRAF_TO_WORKER",
       meta: { pingData },
       payload: actions
     });
@@ -29,12 +42,13 @@ export const mainMessager = ({ worker, onReceiveAction, onBeforePing }) => {
     requestAnimationFrame(ping);
     if (onBeforePing) onBeforePing(post, count);
     sendAll({ count, time: performance.now() });
+    receiveDelayedActions(count);
     count++;
   };
 
   // PUBLIC
   const post = action => {
-    actions.push(action);
+    actions.push({ action });
     if (!pinging) sendAll();
   };
   const startPing = () => {
@@ -53,8 +67,8 @@ export const workerMessager = ({ onReceiveAction, onBeforePong }) => {
   // INIT
   self.addEventListener("message", function handleMessage(mE) {
     const message = JSON.parse(mE.data);
-    if (!message.type || message.type !== "WWPM_TO_WORKER") return;
-    message.payload.forEach(onReceiveAction);
+    if (!message.type || message.type !== "PMRAF_TO_WORKER") return;
+    message.payload.forEach(onAction);
     if (message.meta.pingData) pong(message.meta.pingData);
   });
 
@@ -63,9 +77,12 @@ export const workerMessager = ({ onReceiveAction, onBeforePong }) => {
   const actions = [];
 
   // PRIVATE
+  const onAction = ({ action }) => {
+    onReceiveAction(action);
+  };
   const sendAll = ({ pingRequest, pongData }) => {
     sendToMain({
-      type: "WWPM_TO_MAIN",
+      type: "PMRAF_TO_MAIN",
       meta: { pingRequest, pongData },
       payload: actions
     });
@@ -78,8 +95,8 @@ export const workerMessager = ({ onReceiveAction, onBeforePong }) => {
   };
 
   // PUBLIC
-  const post = action => {
-    actions.push(action);
+  const post = (action, count) => {
+    actions.push({ action, count });
     if (!pinging) sendAll({});
   };
   const startPing = () => {

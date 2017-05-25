@@ -101,4 +101,4 @@ It returns an object with the following methods:
 ```
 
 ## TODO   
-- Support for delayed action callbacks: make it possible for the worker to send a collection of actions, each associated with a count index, and call ```onReceiveAction``` only when the corresponding ping occurs.
+- Support for delayed actions: make it possible for the worker to send a collection of actions, each associated with a count index, and call ```onReceiveAction``` only when the corresponding ping occurs.
