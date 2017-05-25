@@ -8,11 +8,11 @@ npm i @vkammerer/webworker-postmessage
 ## Usage   
 
 ### Default mode   
-In its most basic usage, the library is nothing more than syntaxic sugar on top of the [native postMessage API](https://developer.mozilla.org/en/docs/Web/API/Worker/postMessage).   
+In its most basic usage, the library is nothing more than syntaxic sugar on top of the native [postMessage](https://developer.mozilla.org/en/docs/Web/API/Worker/postMessage) API.   
 
 In the main thread:
 ```javascript
-import { mainMessager } from "@vkammerer/webworker-postmessage";
+import { mainMessager } from "@vkammerer/postmessage-raf";
 
 const slaveWorker = new Worker("./slave.js");
 const messager = mainMessager({ worker: slaveWorker });
