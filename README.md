@@ -72,7 +72,7 @@ The action passed to ```post``` should be namespaced under ```{ payload: {} }```
 #### - workerMessager   
 The function ```workerMessager``` takes an single object as parameter, with the following structure:   
 ```javascript
-const messager = mainMessager({
+const messager = workerMessager({
   onAction: action => { console.log(`Just received an action of type ${action.type}`) },
   // function to execute on all actions received from the main thread
   onPong: pingData => {
@@ -86,9 +86,9 @@ const messager = mainMessager({
 ```
 It returns an object with the following methods:
 ```javascript
-  post, // Sends action to the worker - see usage here under
-  startPing, // Initiates "Ping mode"
-  stopPing, // Terminates "Ping mode" and resumes "Default mode"
+post, // Sends action to the worker - see usage here under
+startPing, // Initiates "Ping mode"
+stopPing, // Terminates "Ping mode" and resumes "Default mode"
 ```
 Usage:
 ```javascript
