@@ -109,7 +109,7 @@ export const workerMessager = ({ onAction, onPong }) => {
   const pong = pingData => {
     if (!s.pinging) return;
     sendAll({ pongData: pingData });
-    if (onPong) onPong(post, pingData);
+    if (onPong) onPong(pingData);
   };
 
   // PUBLIC
