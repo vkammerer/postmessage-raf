@@ -1,10 +1,11 @@
 import { sendToWorker, sendToMain } from "./utils";
 
-export const mainMessager = ({ worker, onAction, onBeforePing }) => {
+export const mainMessager = ({ worker, onAction }) => {
   // STATE
   const s = {
     pinging: false,
-    operations: { next: [] },
+    inOperations: {},
+    outOperations: [],
     count: 0
   };
   window.operations = s.operations;
@@ -20,45 +21,50 @@ export const mainMessager = ({ worker, onAction, onBeforePing }) => {
 
   // PRIVATE
   const onOperation = operation => {
-    if (
-      !operation.meta ||
-      !operation.meta.delay ||
-      !operation.meta.delay.count ||
-      operation.meta.delay.count === s.count
-    )
-      onAction(operation.payload);
-    else if (operation.meta.delay.count > s.count) {
-      s.operations[operation.meta.delay.count] = s.operations[
+    if (!s.pinging) return onAction(operation.payload);
+    if (!operation.meta || !operation.meta.delay) {
+      s.inOperations[s.count] = s.inOperations[s.count] || [];
+      return s.inOperations[s.count].push(operation);
+    }
+    if (operation.meta.delay.count && operation.meta.delay.count >= s.count) {
+      s.inOperations[operation.meta.delay.count] = s.inOperations[
         operation.meta.delay.count
       ] || [];
-      s.operations[operation.meta.delay.count].push(operation);
+      return s.inOperations[operation.meta.delay.count].push(operation);
+    }
+    if (operation.meta.delay.index && operation.meta.delay.index >= 0) {
+      s.inOperations[s.count + operation.meta.delay.index] = s.inOperations[
+        s.count + operation.meta.delay.index
+      ] || [];
+      return s.inOperations[s.count + operation.meta.delay.index].push(
+        operation
+      );
     }
   };
-  const processDelayedOperations = () => {
-    if (!s.operations[s.count]) return;
-    s.operations[s.count].forEach(operation => onAction(operation.payload));
-    s.operations[s.count].length = 0;
+  const processInOperations = () => {
+    if (!s.inOperations[s.count]) return;
+    s.inOperations[s.count].forEach(operation => onAction(operation.payload));
+    s.inOperations[s.count].length = 0;
   };
   const sendAll = ({ pingData }) => {
     sendToWorker(worker, {
       type: "PMRAF_TO_WORKER",
       meta: { pingData },
-      payload: s.operations.next
+      payload: s.outOperations
     });
-    s.operations.next.length = 0;
+    s.outOperations.length = 0;
   };
   const ping = () => {
     if (!s.pinging) return;
     requestAnimationFrame(ping);
-    if (onBeforePing) onBeforePing(post, s.count);
-    sendAll({ pingData: { count: s.count, time: performance.now() } });
-    processDelayedOperations();
+    sendAll({ pingData: { count: s.count } });
+    processInOperations();
     s.count++;
   };
 
   // PUBLIC
   const post = operation => {
-    s.operations.next.push(operation);
+    s.outOperations.push(operation);
     if (!s.pinging) sendAll({});
   };
   const startPing = () => {
@@ -69,15 +75,16 @@ export const mainMessager = ({ worker, onAction, onBeforePing }) => {
   const stopPing = () => {
     s.pinging = false;
     sendAll({});
+    processInOperations();
   };
   return { post };
 };
 
-export const workerMessager = ({ onAction, onBeforePong }) => {
+export const workerMessager = ({ onAction, onPong }) => {
   // STATE
   const s = {
     pinging: false,
-    operations: { next: [] }
+    outOperations: []
   };
   self.operations = s.operations;
 
@@ -85,8 +92,8 @@ export const workerMessager = ({ onAction, onBeforePong }) => {
   self.addEventListener("message", function handleMessage(mE) {
     const message = JSON.parse(mE.data);
     if (!message.type || message.type !== "PMRAF_TO_WORKER") return;
-    message.payload.forEach(onOperation);
     if (message.meta.pingData) pong(message.meta.pingData);
+    message.payload.forEach(onOperation);
   });
 
   // PRIVATE
@@ -95,19 +102,19 @@ export const workerMessager = ({ onAction, onBeforePong }) => {
     sendToMain({
       type: "PMRAF_TO_MAIN",
       meta: { pingRequest, pongData },
-      payload: s.operations.next
+      payload: s.outOperations
     });
-    s.operations.next.length = 0;
+    s.outOperations.length = 0;
   };
   const pong = pingData => {
     if (!s.pinging) return;
-    if (onBeforePong) onBeforePong(post, pingData);
     sendAll({ pongData: pingData });
+    if (onPong) onPong(post, pingData);
   };
 
   // PUBLIC
   const post = operation => {
-    s.operations.next.push(operation);
+    s.outOperations.push(operation);
     if (!s.pinging) sendAll({});
   };
   const startPing = () => {
