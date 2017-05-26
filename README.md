@@ -8,7 +8,7 @@ npm i @vkammerer/postmessage-raf
 ## Usage   
 
 ### Default mode   
-In its most basic usage, the library is nothing more than syntaxic sugar on top of the native [postMessage](https://developer.mozilla.org/en/docs/Web/API/Worker/postMessage) API.   
+In Default mode, the library is nothing more than syntaxic sugar on top of the native [postMessage](https://developer.mozilla.org/en/docs/Web/API/Worker/postMessage) API.   
 
 In the main thread:
 ```javascript
