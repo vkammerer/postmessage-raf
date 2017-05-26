@@ -18,7 +18,7 @@ const slaveWorker = new Worker("./slave.js");
 const messager = mainMessager({ worker: slaveWorker });
 
 const action = { foo: 'bar' };
-messager.post(action);
+messager.post({ payload: action });
 ```
 
 In "slave.js", the worker:
@@ -71,7 +71,7 @@ const action = {
   foo: 'bar',
   data: ['a', 'b']
 }
-messager.post(action);
+messager.post({ payload: action });
 // Encodes the action object and sends it to the worker
 ```
 
