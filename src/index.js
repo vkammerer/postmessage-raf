@@ -63,8 +63,8 @@ export const mainMessager = ({ worker, onAction }) => {
   };
 
   // PUBLIC
-  const post = operation => {
-    s.outOperations.push(operation);
+  const post = action => {
+    s.outOperations.push({ payload: action });
     if (!s.pinging) sendAll({});
   };
   const startPing = () => {
@@ -113,8 +113,8 @@ export const workerMessager = ({ onAction, onPong }) => {
   };
 
   // PUBLIC
-  const post = operation => {
-    s.outOperations.push(operation);
+  const post = (action, meta) => {
+    s.outOperations.push({ payload: action, meta });
     if (!s.pinging) sendAll({});
   };
   const startPing = () => {

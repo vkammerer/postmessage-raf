@@ -18,7 +18,7 @@ const slaveWorker = new Worker("./slave.js");
 const messager = mainMessager({ worker: slaveWorker });
 
 const action = { foo: 'bar' };
-messager.post({ payload: action });
+messager.post(action);
 ```
 
 In "slave.js", the worker:
@@ -29,8 +29,6 @@ const messager = workerMessager({
   onAction: action => console.log(action.foo); // 'bar'
 });
 ```
-
-In this example, the method ```post``` simply calls ```JSON.stringify``` on the action, which is then parsed with ```JSON.parse``` in the other thread.
 
 ### Ping mode   
 The point of this library is to optimize the time at which messages are sent between the main and the worker threads, so that every message is exchanged at the beginning of a [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame) call.   
@@ -64,10 +62,9 @@ const action = {
   foo: 'bar',
   data: ['a', 'b']
 }
-messager.post({ payload: action });
+messager.post(action);
 // Sends action to the worker
 ```
-The action passed to ```post``` should be namespaced under ```{ payload: {} }```. This is to preserve the same format as the post method returned by  ```workerMessager``` (see here under).
 
 #### - workerMessager   
 The function ```workerMessager``` takes an single object as parameter, with the following structure:   
@@ -96,20 +93,17 @@ const action = {
   foo: 'bar',
   data: ['a', 'b']
 }
-messager.post({
-  payload: action,
-  meta: {
-    delay: {
-      count: 10,
-      // Registers the action to be called at the 10th ping since startPing was called.
-      // If the ping has already occured or if the pinging mode is stopped before,
-      // the action will be ignored.
-      // Not to be used in conjunction with 'index' here under
-      index: 12
-      // Registers the action to be called 12 pings after the main thread will receive it.
-      // If the pinging mode is stopped before, the action will be ignored.
-      // Not to be used in conjunction with 'count' here above
-    }
+messager.post(action, {
+  delay: {
+    count: 10,
+    // Registers the action to be called at the 10th ping since startPing was called.
+    // If the ping has already occured or if the pinging mode is stopped before,
+    // the action will be ignored.
+    // Not to be used in conjunction with 'index' here under
+    index: 12
+    // Registers the action to be called 12 pings after the main thread will receive it.
+    // If the pinging mode is stopped before, the action will be ignored.
+    // Not to be used in conjunction with 'count' here above
   }
 });
 // Sends action to the main thread
