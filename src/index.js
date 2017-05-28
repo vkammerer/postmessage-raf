@@ -1,6 +1,6 @@
 import { sendToWorker, sendToMain } from "./utils";
 
-export const mainMessager = ({ worker, onAction }) => {
+export const mainMessager = ({ worker, onAction, beforePing, afterPing }) => {
   // STATE
   const s = {
     pinging: false,
@@ -62,9 +62,11 @@ export const mainMessager = ({ worker, onAction }) => {
   const ping = () => {
     if (!s.pinging) return;
     requestAnimationFrame(ping);
+    if (beforePing) beforePing(s.pingCount);
     sendAll({ pingCount: s.pingCount });
     processInOperations();
     s.pingCount++;
+    if (afterPing) afterPing(s.pingCount);
   };
 
   // PUBLIC
@@ -85,7 +87,7 @@ export const mainMessager = ({ worker, onAction }) => {
   return { post };
 };
 
-export const workerMessager = ({ onAction, onPong }) => {
+export const workerMessager = ({ onAction, beforePong, afterPong }) => {
   // STATE
   const s = {
     pinging: false,
@@ -113,9 +115,9 @@ export const workerMessager = ({ onAction, onPong }) => {
   };
   const pong = pingCount => {
     if (!s.pinging) return;
-    // beforePongHooks.forEach()
+    if (beforePong) beforePong(pingCount);
     sendAll({ pingCount });
-    if (onPong) onPong(pingCount);
+    if (afterPong) afterPong(pingCount);
   };
 
   // PUBLIC

@@ -53,6 +53,18 @@ const messager = mainMessager({
   // worker instance
   onAction: action => { console.log(`Just received an action of type ${action.type}`) },
   // function to execute on all actions received from the worker
+  beforePing: pingCount => {
+    console.log(
+      `The main thread is about to send a ping.
+      The number of pings since startPing was called is ${pingCount}.`;
+    )
+  },
+  afterPing: pingCount => {
+    console.log(
+      `The main thread just sent a ping.
+      The number of pings since startPing was called is ${pingCount}.`;
+    )
+  }
 });
 
 ```
@@ -72,9 +84,15 @@ The function ```workerMessager``` takes an single object as parameter, with the 
 const messager = workerMessager({
   onAction: action => { console.log(`Just received an action of type ${action.type}`) },
   // function to execute on all actions received from the main thread
-  onPong: pingCount => {
+  beforePong: pingCount => {
     console.log(
-      `The worker just sent a pong message.
+      `The worker just received a ping and is about to send a pong.
+      The number of pings since startPing was called is ${pingCount}.`;
+    )
+  },
+  afterPong: pingCount => {
+    console.log(
+      `The worker just sent a pong.
       The number of pings since startPing was called is ${pingCount}.`;
     )
   }
