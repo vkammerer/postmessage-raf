@@ -72,10 +72,10 @@ The function ```workerMessager``` takes an single object as parameter, with the 
 const messager = workerMessager({
   onAction: action => { console.log(`Just received an action of type ${action.type}`) },
   // function to execute on all actions received from the main thread
-  onPong: pingData => {
+  onPong: pingCount => {
     console.log(
       `The worker just sent a pong message.
-      The number of pings since startPing was called is ${pingData.count}.`;
+      The number of pings since startPing was called is ${pingCount}.`;
     )
   }
   // function executed after the pong message in "Ping mode"

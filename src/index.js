@@ -6,7 +6,7 @@ export const mainMessager = ({ worker, onAction }) => {
     pinging: false,
     inOperations: {},
     outOperations: [],
-    count: 0
+    pingCount: 0
   };
   window.operations = s.operations;
 
@@ -23,33 +23,38 @@ export const mainMessager = ({ worker, onAction }) => {
   const onOperation = operation => {
     if (!s.pinging) return onAction(operation.payload);
     if (!operation.meta || !operation.meta.delay) {
-      s.inOperations[s.count] = s.inOperations[s.count] || [];
-      return s.inOperations[s.count].push(operation);
+      s.inOperations[s.pingCount] = s.inOperations[s.pingCount] || [];
+      return s.inOperations[s.pingCount].push(operation);
     }
-    if (operation.meta.delay.count && operation.meta.delay.count >= s.count) {
-      s.inOperations[operation.meta.delay.count] = s.inOperations[
-        operation.meta.delay.count
+    if (
+      operation.meta.delay.pingCount &&
+      operation.meta.delay.pingCount >= s.pingCount
+    ) {
+      s.inOperations[operation.meta.delay.pingCount] = s.inOperations[
+        operation.meta.delay.pingCount
       ] || [];
-      return s.inOperations[operation.meta.delay.count].push(operation);
+      return s.inOperations[operation.meta.delay.pingCount].push(operation);
     }
     if (operation.meta.delay.index && operation.meta.delay.index >= 0) {
-      s.inOperations[s.count + operation.meta.delay.index] = s.inOperations[
-        s.count + operation.meta.delay.index
+      s.inOperations[s.pingCount + operation.meta.delay.index] = s.inOperations[
+        s.pingCount + operation.meta.delay.index
       ] || [];
-      return s.inOperations[s.count + operation.meta.delay.index].push(
+      return s.inOperations[s.pingCount + operation.meta.delay.index].push(
         operation
       );
     }
   };
   const processInOperations = () => {
-    if (!s.inOperations[s.count]) return;
-    s.inOperations[s.count].forEach(operation => onAction(operation.payload));
-    s.inOperations[s.count].length = 0;
+    if (!s.inOperations[s.pingCount]) return;
+    s.inOperations[s.pingCount].forEach(operation =>
+      onAction(operation.payload)
+    );
+    s.inOperations[s.pingCount].length = 0;
   };
-  const sendAll = ({ pingData }) => {
+  const sendAll = ({ pingCount }) => {
     sendToWorker(worker, {
       type: "PMRAF_TO_WORKER",
-      meta: { pingData },
+      meta: { pingCount },
       payload: s.outOperations
     });
     s.outOperations.length = 0;
@@ -57,9 +62,9 @@ export const mainMessager = ({ worker, onAction }) => {
   const ping = () => {
     if (!s.pinging) return;
     requestAnimationFrame(ping);
-    sendAll({ pingData: { count: s.count } });
+    sendAll({ pingCount: s.pingCount });
     processInOperations();
-    s.count++;
+    s.pingCount++;
   };
 
   // PUBLIC
@@ -69,7 +74,7 @@ export const mainMessager = ({ worker, onAction }) => {
   };
   const startPing = () => {
     s.pinging = true;
-    s.count = 0;
+    s.pingCount = 0;
     requestAnimationFrame(ping);
   };
   const stopPing = () => {
@@ -92,24 +97,25 @@ export const workerMessager = ({ onAction, onPong }) => {
   self.addEventListener("message", function handleMessage(mE) {
     const message = JSON.parse(mE.data);
     if (!message.type || message.type !== "PMRAF_TO_WORKER") return;
-    if (message.meta.pingData) pong(message.meta.pingData);
+    if (message.meta.pingCount) pong(message.meta.pingCount);
     message.payload.forEach(onOperation);
   });
 
   // PRIVATE
   const onOperation = operation => onAction(operation.payload);
-  const sendAll = ({ pingRequest, pongData }) => {
+  const sendAll = ({ pingRequest, pingCount }) => {
     sendToMain({
       type: "PMRAF_TO_MAIN",
-      meta: { pingRequest, pongData },
+      meta: { pingRequest, pingCount },
       payload: s.outOperations
     });
     s.outOperations.length = 0;
   };
-  const pong = pingData => {
+  const pong = pingCount => {
     if (!s.pinging) return;
-    sendAll({ pongData: pingData });
-    if (onPong) onPong(pingData);
+    // beforePongHooks.forEach()
+    sendAll({ pingCount });
+    if (onPong) onPong(pingCount);
   };
 
   // PUBLIC
