@@ -1,6 +1,6 @@
 {
   "name": "@vkammerer/postmessage-raf",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A small layer on top of postMessage and requestAnimationFrame to improve performance with web workers",
   "keywords": [
     "webworker",
