@@ -29,15 +29,13 @@ export const mainMessager = ({ worker, onAction, beforePing, afterPing }) => {
       operation.meta.delay.pingCount &&
       operation.meta.delay.pingCount >= s.pingCount
     ) {
-      s.inOperations[operation.meta.delay.pingCount] = s.inOperations[
-        operation.meta.delay.pingCount
-      ] || [];
+      s.inOperations[operation.meta.delay.pingCount] =
+        s.inOperations[operation.meta.delay.pingCount] || [];
       return s.inOperations[operation.meta.delay.pingCount].push(operation);
     }
     if (operation.meta.delay.index && operation.meta.delay.index >= 0) {
-      s.inOperations[s.pingCount + operation.meta.delay.index] = s.inOperations[
-        s.pingCount + operation.meta.delay.index
-      ] || [];
+      s.inOperations[s.pingCount + operation.meta.delay.index] =
+        s.inOperations[s.pingCount + operation.meta.delay.index] || [];
       return s.inOperations[s.pingCount + operation.meta.delay.index].push(
         operation
       );
@@ -61,7 +59,7 @@ export const mainMessager = ({ worker, onAction, beforePing, afterPing }) => {
     requestAnimationFrame(ping);
     if (beforePing) beforePing(s.pingCount);
     sendAll({ pingCount: s.pingCount });
-    if (afterPing) afterPing(s.pingCount + 1);
+    if (afterPing) afterPing(s.pingCount);
     processInOperations(s.pingCount);
     s.pingCount++;
   };
@@ -113,7 +111,7 @@ export const workerMessager = ({ onAction, beforePong, afterPong }) => {
     if (!s.pinging) return;
     if (beforePong) beforePong(pingCount);
     sendAll({ pingCount });
-    if (afterPong) afterPong(pingCount + 1);
+    if (afterPong) afterPong(pingCount);
   };
 
   // PUBLIC
